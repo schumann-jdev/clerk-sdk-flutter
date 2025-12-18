@@ -680,11 +680,15 @@ class Auth {
           }
 
           if (signUp.unverified(Field.emailAddress)) {
-            if (env.supportsEmailCode) {
+            // Fix: Check if email verification already exists to avoid duplicate emails
+            // See: https://github.com/clerk/clerk-sdk-flutter/issues/117
+            if (env.supportsEmailCode && 
+                signUp.verifications[Field.emailAddress] == null) {
               await _api
                   .prepareSignUp(signUp, strategy: Strategy.emailCode)
                   .then(_housekeeping);
             }
+
             if (env.supportsEmailLink && redirectUrl is String) {
               await _api
                   .prepareSignUp(
